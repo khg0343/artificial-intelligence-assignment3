@@ -8,6 +8,7 @@ from collections import Counter
 from util import *
 
 
+
 ############################################################
 # Problem 1: hinge loss
 ############################################################
@@ -19,7 +20,18 @@ def problem_1a():
         pretty, good, bad, plot, not, scenery
     """
     # BEGIN_YOUR_ANSWER (our solution is 1 lines of code, but don't worry if you deviate from this)
-    raise NotImplementedError  # remove this line before writing code
+    # raise NotImplementedError  # remove this line before writing code
+
+    dict = collections.defaultdict(int)
+    dict["pretty"] = 1
+    dict["good"] = 0
+    dict["bad"] = -1
+    dict["plot"] = -1
+    dict["not"] = -1
+    dict["scenery"] = 0
+    
+    # print(dict)
+    return dict
     # END_YOUR_ANSWER
 
 
@@ -40,7 +52,16 @@ def extractWordFeatures(x):
     Example: "I am what I am" --> {'I': 2, 'am': 2, 'what': 1}
     """
     # BEGIN_YOUR_ANSWER (our solution is 6 lines of code, but don't worry if you deviate from this)
-    raise NotImplementedError  # remove this line before writing code
+    # raise NotImplementedError  # remove this line before writing code
+    dict = collections.defaultdict(int)
+    wordList = x.split()
+    for word in wordList:
+        if word not in dict:
+            dict[word] = 1
+        else :
+            dict[word] += 1
+    return dict
+
     # END_YOUR_ANSWER
 
 
@@ -70,10 +91,30 @@ def learnPredictor(trainExamples, testExamples, featureExtractor, numIters, eta)
         return 1 / (1 + math.exp(-n))
 
     # BEGIN_YOUR_ANSWER (our solution is 14 lines of code, but don't worry if you deviate from this)
-    raise NotImplementedError  # remove this line before writing code
+    # raise NotImplementedError  # remove this line before writing code
+    def predict(x):
+        phi=featureExtractor(x)
+        if sigmoid(dotProduct(weights,phi)) > 0.5:
+            return +1
+        else:
+            return -1
+               
+    for i in range(numIters):
+        for x, y in trainExamples:
+            phi = featureExtractor(x)
+            for p in phi:
+                if p not in weights : 
+                    weights[p] = 0
+                dp = math.exp(dotProduct(weights,phi))
+                if y == 1 :
+                    weights[p] += eta * phi[p] / (1 + dp)
+                elif y == -1 :
+                    weights[p] -= eta * phi[p] * dp / (1 + dp)
+                
+        print("Iteration:%s, Training error:%s, Test error:%s"%(i,evaluatePredictor(trainExamples,predict),evaluatePredictor(testExamples,predict)))
+
     # END_YOUR_ANSWER
     return weights
-
 
 ############################################################
 # Problem 2c: bigram features
@@ -81,13 +122,34 @@ def learnPredictor(trainExamples, testExamples, featureExtractor, numIters, eta)
 
 def extractBigramFeatures(x):
     """
-    Extract unigram and bigram features for a string x, where bigram feature is a tuple of two consecutive words. In addition, you should consider special words '<s>' and '</s>' which represent the start and the end of sentence respectively. You can exploit extractWordFeatures to extract unigram features.
+    Extract unigram and bigcram features for a string x, where bigram feature is a tuple of two consecutive words. In addition, you should consider special words '<s>' and '</s>' which represent the start and the end of sentence respectively. You can exploit extractWordFeatures to extract unigram features.
 
     For example:
     >>> extractBigramFeatures("I am what I am")
     {('am', 'what'): 1, 'what': 1, ('I', 'am'): 2, 'I': 2, ('what', 'I'): 1, 'am': 2, ('<s>', 'I'): 1, ('am', '</s>'): 1}
     """
     # BEGIN_YOUR_ANSWER (our solution is 5 lines of code, but don't worry if you deviate from this)
-    raise NotImplementedError  # remove this line before writing code
+    # raise NotImplementedError  # remove this line before writing code
+    print(x)
+    phi = collections.defaultdict(int)
+    wordList = x.split()
+    for word in wordList:
+        if word not in phi:
+            phi[word] = 1
+        else :
+            phi[word] += 1
+            
+    for i in range(len(wordList)+1):
+        if i == 0 :
+            phi[('<s>', wordList[i])] = 1
+        elif i == len(wordList) :
+            phi[(wordList[len(wordList)-1], '</s>')] = 1
+        elif (wordList[i-1], wordList[i]) not in phi:
+            phi[(wordList[i-1], wordList[i])] = 1
+        else :
+            phi[(wordList[i-1], wordList[i])] += 1
+            
+    print(phi)
+
     # END_YOUR_ANSWER
     return phi
