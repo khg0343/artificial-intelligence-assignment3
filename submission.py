@@ -92,27 +92,18 @@ def learnPredictor(trainExamples, testExamples, featureExtractor, numIters, eta)
 
     # BEGIN_YOUR_ANSWER (our solution is 14 lines of code, but don't worry if you deviate from this)
     # raise NotImplementedError  # remove this line before writing code
-    def predict(x):
-        phi=featureExtractor(x)
-        if sigmoid(dotProduct(weights,phi)) > 0.5:
-            return +1
-        else:
-            return -1
+
+    for x, y in trainExamples:
+        for p in featureExtractor(x):
+            weights[p] = 0
                
     for i in range(numIters):
         for x, y in trainExamples:
             phi = featureExtractor(x)
+            dp = dotProduct(weights,phi)
             for p in phi:
-                if p not in weights : 
-                    weights[p] = 0
-                dp = math.exp(dotProduct(weights,phi))
-                if y == 1 :
-                    weights[p] += eta * phi[p] / (1 + dp)
-                elif y == -1 :
-                    weights[p] -= eta * phi[p] * dp / (1 + dp)
-                
-        print("Iteration:%s, Training error:%s, Test error:%s"%(i,evaluatePredictor(trainExamples,predict),evaluatePredictor(testExamples,predict)))
-
+                weights[p] += eta * phi[p] * (sigmoid(-dp) + (y-1)/2)
+        
     # END_YOUR_ANSWER
     return weights
 
@@ -130,7 +121,7 @@ def extractBigramFeatures(x):
     """
     # BEGIN_YOUR_ANSWER (our solution is 5 lines of code, but don't worry if you deviate from this)
     # raise NotImplementedError  # remove this line before writing code
-    print(x)
+
     phi = collections.defaultdict(int)
     wordList = x.split()
     for word in wordList:
@@ -148,8 +139,6 @@ def extractBigramFeatures(x):
             phi[(wordList[i-1], wordList[i])] = 1
         else :
             phi[(wordList[i-1], wordList[i])] += 1
-            
-    print(phi)
 
     # END_YOUR_ANSWER
     return phi
